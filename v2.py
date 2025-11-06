@@ -1,5 +1,3 @@
-# I used tekky's script because I was too lazy to do it, it's just a simple script.
-
 from time import sleep
 from datetime import datetime
 from os import system, name as os_name
@@ -14,7 +12,6 @@ from selenium.webdriver.chrome.service import Service
 from webdriver_manager.chrome import ChromeDriverManager
 from selenium.webdriver.chrome.webdriver import WebDriver
 from selenium.webdriver.common.by import By
-
 
 text = """
  ███████ ███████ ███████  ██████  ██    ██ 
@@ -54,11 +51,10 @@ class Zefoy:
         options = Options()
         options.add_experimental_option("detach", True)
         options.add_experimental_option("excludeSwitches", ["enable-logging"])
-
+        options.binary_location = '/home/theyaataabalt/chrome2/chrome.exe'  # Set the path to the Chrome binary
         return webdriver.Chrome(options=options, service=Service(ChromeDriverManager().install()))
-    
-    def solve(debug) -> dict:
 
+    def solve(debug) -> dict:
         session = Session()
         session.headers = {
                 'authority': 'zefoy.com',
@@ -67,19 +63,19 @@ class Zefoy:
                 'cp-extension-installed': 'Yes',
                 'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36',
             }
-        
+
         while True:
             source_code = str(session.get('https://zefoy.com').text).replace('&amp;', '&')
             captcha_token = findall(r'<input type="hidden" name="(.*)">', source_code)
-            
+
             if 'token' in captcha_token:
                 captcha_token.remove('token')
-                
+
             captcha_url    = findall(r'img src="([^"]*)"', source_code)[0]
             token_answer = findall(r'type="text" name="(.*)" oninput="this.value', source_code)[0]
             encoded_image = b64encode(BytesIO(session.get('https://zefoy.com' + captcha_url).content).read()).decode('utf-8')
             captcha_answer = post(f"https://platipus9999.pythonanywhere.com/", json={'captcha': encoded_image, 'current_time': datetime.now().strftime("%H:%M:%S")}).json()["result"]
-            
+
             sleep(1)
 
             data = {
@@ -105,20 +101,20 @@ class Zefoy:
         element.send_keys(vid_info)
         self.driver.find_element(By.XPATH, search_button).click()
         sleep(3)
-            
+
         ratelimit_seconds, full = self.check_submit()
         if "(s)" in str(full):
             self.main_sleep(ratelimit_seconds)
             self.driver.find_element(By.XPATH, search_button).click()
             sleep(2)
-            
+
         sleep(3)
-            
+
         send_button = f'/html/body/div[{div}]/div/div/div[1]/div/form/button'
         self.driver.find_element(By.XPATH, send_button).click()
         self.sent += 1
         print(self._print(f"Sent {self.sent} times."))
-            
+
         sleep(4)
         self.send_bot(search_button, url_box, vid_info, div)
 
@@ -133,38 +129,38 @@ class Zefoy:
 
     def check_submit(self):
         remaining = f'//*[@id="{self.tasks[self.option][1]}"]/span'
-            
+
         try:
             element = self.driver.find_element(By.XPATH, remaining)
         except:
             return None, None
-            
+
         if "READY" in element.text:
             return True, True
-            
+
         if "seconds for your next submit" in element.text:
             output          = element.text.split("Please wait ")[1].split(" for")[0]
             minutes         = element.text.split("Please wait ")[1].split(" ")[0]
             seconds         = element.text.split("(s) ")[1].split(" ")[0]
             sleep_duration  = self.convert(int(minutes), int(seconds))
-                
+
             return sleep_duration, output
-            
+
         return element.text, None
-            
+
     def check_status(self):
         statuses = {}
-            
+
         for thing in self.xpaths:
             value = self.xpaths[thing]
             element = self.driver.find_element(By.XPATH, value)
-                
+
             if not element.is_enabled():
                 statuses.update({thing: f"{Fore.RED}[OFFLINE]"})
-                
+
             else:
                 statuses.update({thing: f"{Fore.GREEN}[WORKS]"})
-            
+
         return statuses
 
     def _print(self, msg, status = "-"):
@@ -181,10 +177,9 @@ class Zefoy:
             except:
                 pass
 
-            
     def main(self):
         self.clear
-        print(Fore.CYAN + text+ "\n") 
+        print(Fore.CYAN + text+ "\n")
         self.driver.get("https://zefoy.com")
 
         print(self._print("Solving The Captcha"))
@@ -196,26 +191,23 @@ class Zefoy:
         self.clear
 
         status = self.check_status()
-            
+
         print('\n')
-            
+
         counter = 1
         for thing in status:
             print(self._print(f"{thing} {status[thing]}", counter))
             counter += 1
 
         self.option = int(input("\n" + self._print(f"")))
-        video_url     = input("\n" + self._print(f"Username/VideoURL: "))    
+        video_url     = input("\n" + self._print(f"Username/VideoURL: "))
 
         task, div = self.tasks[self.option][0]; eval(task)
-               
+
         video_url_box = f'/html/body/div[{div}]/div/form/div/input'
         search_box    = f'/html/body/div[{div}]/div/form/div/div/button'
-        
-            
+
         self.send_bot(search_box, video_url_box, video_url, div)
-
-
 
 if __name__ == "__main__":
     Zefoy().main()
