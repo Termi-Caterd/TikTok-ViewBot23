@@ -51,6 +51,9 @@ class Zefoy:
         options = Options()
         options.add_experimental_option("detach", True)
         options.add_experimental_option("excludeSwitches", ["enable-logging"])
+        options.add_argument('--headless')
+        options.add_argument('--no-sandbox')
+        options.add_argument('--disable-dev-shm-usage')
         options.binary_location = '/home/theyaataabalt/chrome2/chrome.exe'  # Set the path to the Chrome binary
         return webdriver.Chrome(options=options, service=Service(ChromeDriverManager().install()))
 
